@@ -8,10 +8,20 @@ defmodule ShiverWeb.CharactersLive do
 
   defp list_images do
     # Get the list of image files from the priv/static/characters directoryå
-    Path.wildcard("priv/static/user/characters/*") |> IO.inspect(label: "Files") |> Enum.map(fn x -> Path.relative_to(x, "priv/static") end)  |> IO.inspect()
+    Path.wildcard("priv/static/user/characters/*") |> Enum.map(fn x -> Path.relative_to(x, "priv/static") end)
+  end
+
+
+  defp get_metadata(img_path) do
+
+    # {:ok, img} = File.read(img_path)
+    # <<"">>
+    #img |> TextParser.parse_file() |> IO.inspect(label: "Image metadata")
+    CharacterCard.extract_text(img_path)
   end
 
   def render(assigns) do
+    get_metadata("priv/static/user/characters/rabiella.png")
     ~H"""
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
       <%= for image <- @images do %>
@@ -22,4 +32,20 @@ defmodule ShiverWeb.CharactersLive do
     </div>
     """
   end
+end
+
+defmodule CharacterCard do
+  def extract_text(file_path) do
+
+    {:ok, char} = File.read(file_path)
+
+    {pos, _length} = :binary.match(char, "tEXtchara")
+
+    offset = binary_slice(char,pos - 4..pos - 1) |> :binary.decode_unsigned()
+
+    <<"tEXtchara", 0, payload::binary>> = :binary.part(char,{pos, offset + 2})
+
+    Base.decode64!(payload, padding: false) |> Jason.decode!() |> IO.inspect(label: "Reading JSON data")
+  end
+
 end
