@@ -13,10 +13,6 @@ defmodule ShiverWeb.CharactersLive do
 
 
   defp get_metadata(img_path) do
-
-    # {:ok, img} = File.read(img_path)
-    # <<"">>
-    #img |> TextParser.parse_file() |> IO.inspect(label: "Image metadata")
     CharacterCard.extract_text(img_path)
   end
 
@@ -26,7 +22,7 @@ defmodule ShiverWeb.CharactersLive do
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
       <%= for image <- @images do %>
         <div class="flex justify-center items-center">
-          <img class="w-full h-auto object-cover aspect-square" src={image}>
+          <img class="w-full h-auto object-cover rounded-full border-4 hover:border-blue-500 aspect-square" src={image}>
         </div>
       <% end %>
     </div>
@@ -38,14 +34,19 @@ defmodule CharacterCard do
   def extract_text(file_path) do
 
     {:ok, char} = File.read(file_path)
+    <<137, 80, 78, 71, 13, 10, 26, 10, _rest::binary>> = char
 
     {pos, _length} = :binary.match(char, "tEXtchara")
 
     offset = binary_slice(char,pos - 4..pos - 1) |> :binary.decode_unsigned()
 
-    <<"tEXtchara", 0, payload::binary>> = :binary.part(char,{pos, offset + 2})
+    <<"tEXtchara", 0, payload::binary>> = :binary.part(char,{pos, offset + 4})
 
-    Base.decode64!(payload, padding: false) |> Jason.decode!() |> IO.inspect(label: "Reading JSON data")
+    Base.decode64!(payload) |> Jason.decode!() |> IO.inspect(label: "Json data")
+  end
+
+  def write_text(file_path, content) do
+    4
   end
 
 end
