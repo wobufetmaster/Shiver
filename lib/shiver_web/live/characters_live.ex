@@ -17,7 +17,6 @@ defmodule ShiverWeb.CharactersLive do
   end
 
   def render(assigns) do
-    get_metadata("priv/static/user/characters/rabiella.png")
     ~H"""
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
       <%= for image <- @images do %>
